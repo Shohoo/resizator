@@ -5,7 +5,7 @@ from PIL import Image
 
 rootdir = sys.argv[1]
 max_mb = int(sys.argv[2])
-# rootdir = 'C:\\Users\Shohoo\\Desktop\\watches'
+# rootdir = 'C:\\Users\Shohoo\\Desktop\\chiny'
 # max_mb = 2
 
 class Resizator:
@@ -40,20 +40,30 @@ class Resizator:
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
+    def if_oversized(self, path):
+        return (os.path.getsize(path) / 1024 / 1024) > self.max_mb
+
+    def resize(self, im):
+        width, height = im.size
+        im.thumbnail((0.9 * width, 0.9 * height), Image.ANTIALIAS)
+
     def do_file(self, path, new_path):
-        print('Resizing file ' + path)
+        print('Copying file ' + path)
         try:
             im = Image.open(path)
-            print('Creating to ' + new_path)
+        except IOError:
+            print('Is not image file ' + path)
+            return
+
+        print('Saving to ' + new_path)
+        if self.if_oversized(path):
+            self.resize(im)
+        im.save(new_path)
+        while self.if_oversized(new_path):
+            print('Resizing file ' + path)
+            im = Image.open(new_path)
+            self.resize(im)
             im.save(new_path)
-            while (os.path.getsize(new_path) / 1024 / 1024) > self.max_mb:
-                im = Image.open(new_path)
-                width, height = im.size
-                im.thumbnail((0.9 * width, 0.9 * height), Image.ANTIALIAS)
-                im.save(new_path)
-        except:
-            print('Error ' + new_path)
-            pass
         pass
 
 
